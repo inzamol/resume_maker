@@ -1,0 +1,422 @@
+/* Resume Themes & Print Stylesheet - Premium Design System (Strict 1-Page Optimized) */
+
+:root {
+  --page-width-a4: 210mm;
+  --page-min-height-a4: 297mm;
+  --page-width-letter: 8.5in;
+  --page-min-height-letter: 11in;
+  --preview-zoom: 0.88;
+}
+
+/* ========================================================
+   STUDIO CANVAS & PREVIEW WRAPPER
+   ======================================================== */
+.resume-preview-wrapper {
+  background-color: #f8fafc;
+  background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  padding: 32px 16px 80px 16px;
+  overflow-y: auto;
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100%;
+  position: relative;
+  scrollbar-gutter: stable;
+}
+
+/* Zoom stage scales the paper cleanly without breaking layouts */
+.zoom-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: scale(var(--preview-zoom, 0.88));
+  transform-origin: top center;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 40px;
+}
+
+/* Base Sheet Container in Browser View */
+.resume-sheet,
+.cover-letter-sheet {
+  background: #ffffff;
+  color: #1e293b;
+  width: var(--page-width-a4);
+  min-height: var(--page-min-height-a4);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+              0 20px 25px -5px rgba(0, 0, 0, 0.08),
+              0 0 0 1px rgba(15, 23, 42, 0.06);
+  border-radius: 4px;
+  box-sizing: border-box;
+  position: relative;
+  transition: width 0.2s ease, min-height 0.2s ease;
+}
+
+/* 1-Page Tight Proportions */
+.resume-sheet {
+  padding: 10mm 14mm;
+  font-size: 9.25pt;
+  line-height: 1.36;
+}
+
+.cover-letter-sheet {
+  padding: 20mm 22mm;
+  font-size: 10pt;
+  line-height: 1.6;
+}
+
+.resume-sheet.letter-size,
+.cover-letter-sheet.letter-size {
+  width: var(--page-width-letter);
+  min-height: var(--page-min-height-letter);
+}
+
+.resume-sheet.letter-size {
+  padding: 0.42in 0.55in;
+}
+
+.cover-letter-sheet.letter-size {
+  padding: 0.8in 0.85in;
+}
+
+/* 1-Page Boundary Indicator (visible only when content overflows) */
+.page-limit-guide {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 297mm;
+  border-top: 2px dashed #f43f5e;
+  pointer-events: none;
+  opacity: 0.75;
+  z-index: 10;
+}
+
+.page-limit-guide::after {
+  content: "1-Page Limit (A4)";
+  position: absolute;
+  right: 12px;
+  top: -16px;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #e11d48;
+  background: white;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid #fecdd3;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.resume-sheet.letter-size .page-limit-guide {
+  top: 11in;
+}
+
+.resume-sheet.letter-size .page-limit-guide::after {
+  content: "1-Page Limit (Letter)";
+}
+
+/* Cover letter specific typography */
+.cover-letter-sheet p {
+  margin-bottom: 12px;
+  color: #334155;
+}
+
+.cover-letter-sheet h1 {
+  font-size: 18pt;
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: #0f172a;
+}
+
+.cover-letter-sheet h1 + p,
+.cover-letter-sheet h1 + ul {
+  font-size: 8.5pt;
+  color: #64748b;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+  list-style: none;
+  padding-left: 0;
+}
+
+/* ========================================================
+   THEME 1: MODERN CLEAN (1-Page High-Density Standard)
+   ======================================================== */
+.theme-modern {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #0f172a;
+}
+
+.theme-modern h1 {
+  font-size: 18pt;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0 0 3px 0;
+  color: #0f172a;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.theme-modern h1 + ul,
+.theme-modern h1 + p {
+  text-align: center;
+  font-size: 8.5pt;
+  color: #475569;
+  margin: 0 0 8px 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.25;
+}
+
+.theme-modern h1 + ul li {
+  display: inline-block;
+  margin: 0;
+}
+
+.theme-modern h1 + ul li:not(:last-child)::after {
+  content: "•";
+  margin-left: 6px;
+  color: #94a3b8;
+}
+
+.theme-modern h2 {
+  font-size: 9.75pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1e3a8a;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 1.5px;
+  margin-top: 7px;
+  margin-bottom: 3px;
+  page-break-after: avoid;
+  line-height: 1.2;
+}
+
+.theme-modern h3 {
+  font-size: 9.25pt;
+  font-weight: 600;
+  margin-top: 4px;
+  margin-bottom: 1px;
+  color: #1e293b;
+  display: flex;
+  justify-content: space-between;
+  page-break-after: avoid;
+  line-height: 1.25;
+}
+
+.theme-modern em, 
+.theme-modern p > em {
+  font-size: 8pt;
+  color: #64748b;
+  font-style: italic;
+  display: block;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+.theme-modern ul {
+  margin: 1.5px 0 3px 0;
+  padding-left: 15px;
+}
+
+.theme-modern li {
+  margin-bottom: 2px;
+  color: #334155;
+  line-height: 1.34;
+}
+
+.theme-modern p {
+  margin: 2px 0;
+  line-height: 1.35;
+}
+
+.theme-modern strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* ========================================================
+   THEME 2: CLASSIC EXECUTIVE (1-Page Serif Standard)
+   ======================================================== */
+.theme-classic {
+  font-family: 'Merriweather', 'Times New Roman', Georgia, serif;
+  color: #111827;
+}
+
+.theme-classic h1 {
+  font-size: 17.5pt;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 2px 0;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+}
+
+.theme-classic h1 + ul,
+.theme-classic h1 + p {
+  text-align: center;
+  font-size: 8.5pt;
+  color: #374151;
+  margin: 0 0 8px 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  list-style: none;
+  line-height: 1.25;
+}
+
+.theme-classic h2 {
+  font-size: 9.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #111827;
+  border-bottom: 1px solid #111827;
+  padding-bottom: 1px;
+  margin-top: 7px;
+  margin-bottom: 3px;
+  page-break-after: avoid;
+  line-height: 1.2;
+}
+
+.theme-classic h3 {
+  font-size: 9.25pt;
+  font-weight: 700;
+  margin-top: 4px;
+  margin-bottom: 1px;
+  color: #111827;
+  page-break-after: avoid;
+  line-height: 1.25;
+}
+
+.theme-classic ul {
+  margin: 1.5px 0 3px 0;
+  padding-left: 15px;
+}
+
+.theme-classic li {
+  margin-bottom: 2px;
+  font-size: 9pt;
+  color: #1f2937;
+  line-height: 1.34;
+}
+
+.theme-classic p {
+  margin: 2px 0;
+  line-height: 1.35;
+}
+
+/* ========================================================
+   THEME 3: MINIMALIST TECH (1-Page Mono Standard)
+   ======================================================== */
+.theme-tech {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #18181b;
+}
+
+.theme-tech h1 {
+  font-size: 17pt;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 2px;
+  line-height: 1.15;
+}
+
+.theme-tech h2 {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 9.25pt;
+  font-weight: 600;
+  color: #0369a1;
+  border-bottom: 1px dashed #cbd5e1;
+  padding-bottom: 1.5px;
+  margin-top: 7px;
+  margin-bottom: 3px;
+  line-height: 1.2;
+}
+
+.theme-tech h3 {
+  font-size: 9pt;
+  font-weight: 600;
+  margin-top: 4px;
+  margin-bottom: 1px;
+  line-height: 1.25;
+}
+
+.theme-tech ul {
+  margin: 1.5px 0 3px 0;
+  padding-left: 15px;
+}
+
+.theme-tech li {
+  margin-bottom: 2px;
+  font-size: 9pt;
+  color: #27272a;
+  line-height: 1.34;
+}
+
+.theme-tech p {
+  margin: 2px 0;
+  line-height: 1.35;
+}
+
+/* General Link Styling */
+.resume-sheet a,
+.cover-letter-sheet a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ========================================================
+   PRINT OVERRIDES & PAGE RENDERING
+   ======================================================== */
+@media print {
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .no-print, header, aside, .app-sidebar, .app-header, .export-bar, #toast, .page-limit-guide {
+    display: none !important;
+  }
+
+  .resume-preview-wrapper {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  .zoom-stage {
+    transform: none !important;
+    margin-bottom: 0 !important;
+  }
+
+  .resume-sheet,
+  .cover-letter-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  p, li {
+    page-break-inside: auto;
+  }
+}

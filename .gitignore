@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+data/resumes/
+!data/resumes/.gitkeep
+data/cover_letters/
+!data/cover_letters/.gitkeep
+
