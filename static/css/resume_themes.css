@@ -60,6 +60,30 @@
   line-height: 1.36;
 }
 
+/* Direct WYSIWYG In-Place Editing Styles */
+.resume-sheet[contenteditable="true"],
+.cover-letter-sheet[contenteditable="true"] {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 3px !important;
+  cursor: text;
+}
+
+.resume-sheet[contenteditable="true"] h1:hover,
+.resume-sheet[contenteditable="true"] h2:hover,
+.resume-sheet[contenteditable="true"] h3:hover,
+.resume-sheet[contenteditable="true"] li:hover,
+.resume-sheet[contenteditable="true"] p:hover,
+.cover-letter-sheet[contenteditable="true"] p:hover {
+  background-color: rgba(239, 246, 255, 0.45);
+  border-radius: 2px;
+}
+
+.resume-sheet[contenteditable="true"] *:focus,
+.cover-letter-sheet[contenteditable="true"] *:focus {
+  outline: none;
+  background-color: rgba(239, 246, 255, 0.7);
+}
+
 .cover-letter-sheet {
   padding: 20mm 22mm;
   font-size: 10pt;
@@ -371,6 +395,36 @@
   color: inherit;
   text-decoration: none;
 }
+
+/* ========================================================
+   DIRECT ON-PAPER WYSIWYG EDITING MODE
+   ======================================================== */
+.resume-sheet[contenteditable="true"] {
+  outline: 2px dashed #3b82f6 !important;
+  outline-offset: 4px;
+  cursor: text;
+  caret-color: #2563eb;
+  transition: outline 0.2s ease-in-out;
+}
+
+.resume-sheet[contenteditable="true"] * {
+  cursor: text;
+}
+
+.resume-sheet[contenteditable="true"] h1:hover,
+.resume-sheet[contenteditable="true"] h2:hover,
+.resume-sheet[contenteditable="true"] h3:hover,
+.resume-sheet[contenteditable="true"] p:hover,
+.resume-sheet[contenteditable="true"] li:hover {
+  background-color: rgba(239, 246, 255, 0.6);
+  border-radius: 2px;
+  transition: background-color 0.15s ease;
+}
+
+.resume-sheet[contenteditable="true"] *:focus {
+  outline: none;
+}
+
 
 /* ========================================================
    PRINT OVERRIDES & PAGE RENDERING

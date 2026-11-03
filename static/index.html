@@ -25,6 +25,8 @@
     </script>
     <!-- Marked.js for real-time Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Turndown.js for HTML-to-Markdown WYSIWYG sync -->
+    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
     <!-- html2pdf.js for client-side direct vector PDF download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Google Fonts -->
@@ -378,6 +380,28 @@
 
             <!-- VIEW 1: RESUME LIVE CANVAS PREVIEW -->
             <div id="pane-preview" class="resume-preview-wrapper flex-1">
+                <!-- In-Place WYSIWYG Editing Bar -->
+                <div class="sticky top-2 z-20 mb-3 bg-white/95 backdrop-blur border border-slate-200/90 rounded-lg px-3 py-1.5 shadow-sm flex items-center justify-between gap-3 max-w-2xl w-full transition-all">
+                    <div class="flex items-center gap-2">
+                        <button id="toggle-inplace-edit-btn" class="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+                            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            <span id="inplace-edit-btn-text">Edit Directly on Paper</span>
+                        </button>
+                        <span id="inplace-status-text" class="text-[11px] text-slate-400 hidden sm:inline">Click any line on the resume to type or fix</span>
+                    </div>
+
+                    <!-- In-Place Formatting Tools (Active when editing) -->
+                    <div id="inplace-tools-group" class="hidden flex items-center gap-1 border-l border-slate-200 pl-2">
+                        <button id="inplace-bold-btn" type="button" class="px-2 py-0.5 rounded hover:bg-slate-100 text-slate-800 font-bold text-xs" title="Bold (Ctrl+B)">B</button>
+                        <button id="inplace-italic-btn" type="button" class="px-2 py-0.5 rounded hover:bg-slate-100 text-slate-800 italic font-serif text-xs" title="Italic (Ctrl+I)">I</button>
+                        <button id="inplace-bullet-btn" type="button" class="px-2 py-0.5 rounded hover:bg-slate-100 text-slate-700 text-xs" title="Insert Bullet Item">• Bullet</button>
+                        <div class="h-3.5 w-px bg-slate-200 mx-0.5"></div>
+                        <button id="inplace-sync-btn" type="button" class="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors" title="Sync back to Markdown">
+                            <span>✓ Sync Edits</span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="zoom-stage">
                     <div id="resume-sheet" class="resume-sheet theme-modern select-text">
                         <!-- Rendered Markdown goes here -->
@@ -385,19 +409,77 @@
                 </div>
             </div>
 
-            <!-- VIEW 2: MARKDOWN RAW CODE EDITOR -->
-            <div id="pane-editor" class="hidden flex-1 p-4 flex flex-col bg-slate-50 select-text">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-semibold text-slate-700">Markdown Source</span>
-                        <span class="text-[11px] text-slate-400">Edits update the live preview instantly</span>
+            <!-- VIEW 2: RICH MARKDOWN CODE STUDIO -->
+            <div id="pane-editor" class="hidden flex-1 p-3 flex flex-col bg-slate-100 select-text">
+                <!-- Rich Studio Bar -->
+                <div class="bg-white border border-slate-200 rounded-t-lg p-2 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+                    <!-- Formatting Toolbar -->
+                    <div class="flex items-center flex-wrap gap-1">
+                        <div class="flex items-center bg-slate-50 border border-slate-200 rounded p-0.5">
+                            <button id="md-bold-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs font-bold text-slate-800 transition-colors" title="Bold (Ctrl+B)">B</button>
+                            <button id="md-italic-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs italic font-serif text-slate-800 transition-colors" title="Italic (Ctrl+I)">I</button>
+                            <button id="md-h1-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs font-bold text-slate-800 transition-colors" title="Name Header (H1)">H1</button>
+                            <button id="md-h2-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs font-bold text-slate-800 transition-colors" title="Section Header (H2)">H2</button>
+                            <button id="md-h3-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs font-bold text-slate-800 transition-colors" title="Role/Project (H3)">H3</button>
+                        </div>
+
+                        <div class="flex items-center bg-slate-50 border border-slate-200 rounded p-0.5">
+                            <button id="md-bullet-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs text-slate-700 transition-colors" title="Bullet Item">• List</button>
+                            <button id="md-numlist-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs text-slate-700 transition-colors" title="Numbered Item">1. List</button>
+                            <button id="md-link-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs text-slate-700 transition-colors" title="Add Link">🔗</button>
+                        </div>
+
+                        <!-- Snippet Generators -->
+                        <div class="flex items-center bg-slate-50 border border-slate-200 rounded p-0.5">
+                            <button id="md-xyz-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs font-semibold text-blue-700 transition-colors" title="Insert Google XYZ Metric Bullet">+ XYZ Bullet</button>
+                            <button id="md-role-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs font-medium text-slate-700 transition-colors" title="Insert Job Experience Block">+ Role</button>
+                            <button id="md-project-btn" type="button" class="px-2 py-1 hover:bg-white rounded text-xs font-medium text-slate-700 transition-colors" title="Insert Project Block">+ Project</button>
+                        </div>
+
+                        <!-- Action Verbs Selector -->
+                        <select id="md-verbs-select" class="text-xs bg-slate-50 border border-slate-200 rounded px-2 py-1 outline-none text-slate-700 font-medium">
+                            <option value="" disabled selected>⚡ Action Verbs</option>
+                            <option value="Spearheaded">Spearheaded</option>
+                            <option value="Architected">Architected</option>
+                            <option value="Engineered">Engineered</option>
+                            <option value="Optimized">Optimized</option>
+                            <option value="Automated">Automated</option>
+                            <option value="Streamlined">Streamlined</option>
+                            <option value="Accelerated">Accelerated</option>
+                            <option value="Orchestrated">Orchestrated</option>
+                            <option value="Pioneered">Pioneered</option>
+                            <option value="Mentored">Mentored</option>
+                        </select>
                     </div>
-                    <button id="save-edits-btn" class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-md shadow-xs transition-all flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                        <span>Save to Disk</span>
-                    </button>
+
+                    <!-- Right: Save & Quick Actions -->
+                    <div class="flex items-center gap-2">
+                        <button id="save-edits-btn" class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-md shadow-xs transition-all flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            <span>Save to Disk</span>
+                        </button>
+                    </div>
                 </div>
-                <textarea id="markdown-editor" class="flex-1 w-full p-4 font-mono text-xs leading-relaxed border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none resize-none bg-white shadow-2xs"></textarea>
+
+                <!-- Editor Textarea Area with Syntax Area -->
+                <div class="flex-1 flex flex-col relative bg-white border-x border-b border-slate-200 rounded-b-lg overflow-hidden shadow-xs">
+                    <textarea id="markdown-editor" class="flex-1 w-full p-4 font-mono text-xs leading-relaxed outline-none resize-none bg-transparent" placeholder="Type or edit markdown here..."></textarea>
+                    
+                    <!-- Editor Status Footer -->
+                    <div class="border-t border-slate-100 bg-slate-50/80 px-3 py-1.5 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                        <div class="flex items-center gap-3">
+                            <span id="md-words-count">0 words</span>
+                            <span>•</span>
+                            <span id="md-chars-count">0 chars</span>
+                            <span>•</span>
+                            <span id="md-lines-count">0 lines</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-emerald-600 font-sans">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <span>Live synced to preview</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- VIEW 3: ATS MATCH & GAP ANALYSIS -->

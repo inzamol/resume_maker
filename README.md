@@ -22,6 +22,10 @@ A powerful, customizable system that transforms your master career history into 
   - Instant ATS Fit Score (0–100%)
   - Matched keywords pill list
   - Missing skills / gap highlights to help you prepare for technical interviews
+- **Dual Rich Resume Editor**:
+  - **Direct On-Paper WYSIWYG Editing**: Click **"Edit Directly on Paper"** to type, fix, bold, and reword bullet points right on the rendered paper sheet. Edits automatically sync back to clean Markdown in real-time via Turndown.js.
+  - **Rich Markdown Studio Toolbar**: Format headers (H1/H2/H3), bold, italics, bullet lists, numbered lists, links, insert Google XYZ formula bullets (`+ XYZ Bullet`), add job role or project blocks, and insert action verbs with 1 click.
+  - **Live Editor Stats**: Tracks character count, word count, and lines in real-time.
 - **1-Page Guarantee & ATS Formatting**:
   - Automatically structures experiences, summaries, and bullet points to fit strictly on **1 single page** (~350–450 words) adhering to modern tech industry standards.
   - Interactive **1-Page Live Fit Badge** (`✓ 1 Page Fit` or overflow alert) and visual page boundary guide in the preview canvas.

@@ -38,6 +38,7 @@ const state = {
     currentFilename: null,
     currentCoverLetter: '',
     currentLetterFilename: null,
+    isEditingInPlace: false,
     isLoading: false,
 };
 
@@ -133,6 +134,33 @@ const elements = {
     copyMdBtn: document.getElementById('copy-md-btn'),
     saveEditsBtn: document.getElementById('save-edits-btn'),
 
+    // In-Place WYSIWYG Editing Bar
+    toggleInPlaceEditBtn: document.getElementById('toggle-inplace-edit-btn'),
+    inplaceEditBtnText: document.getElementById('inplace-edit-btn-text'),
+    inplaceStatusText: document.getElementById('inplace-status-text'),
+    inplaceToolsGroup: document.getElementById('inplace-tools-group'),
+    inplaceBoldBtn: document.getElementById('inplace-bold-btn'),
+    inplaceItalicBtn: document.getElementById('inplace-italic-btn'),
+    inplaceBulletBtn: document.getElementById('inplace-bullet-btn'),
+    inplaceSyncBtn: document.getElementById('inplace-sync-btn'),
+
+    // Rich Markdown Studio Toolbar
+    mdBoldBtn: document.getElementById('md-bold-btn'),
+    mdItalicBtn: document.getElementById('md-italic-btn'),
+    mdH1Btn: document.getElementById('md-h1-btn'),
+    mdH2Btn: document.getElementById('md-h2-btn'),
+    mdH3Btn: document.getElementById('md-h3-btn'),
+    mdBulletBtn: document.getElementById('md-bullet-btn'),
+    mdNumListBtn: document.getElementById('md-numlist-btn'),
+    mdLinkBtn: document.getElementById('md-link-btn'),
+    mdXyzBtn: document.getElementById('md-xyz-btn'),
+    mdRoleBtn: document.getElementById('md-role-btn'),
+    mdProjectBtn: document.getElementById('md-project-btn'),
+    mdVerbsSelect: document.getElementById('md-verbs-select'),
+    mdWordsCount: document.getElementById('md-words-count'),
+    mdCharsCount: document.getElementById('md-chars-count'),
+    mdLinesCount: document.getElementById('md-lines-count'),
+
     // ATS Match Panel
     atsScoreNum: document.getElementById('ats-score-num'),
     atsScoreCircle: document.getElementById('ats-score-circle'),
@@ -154,7 +182,8 @@ async function init() {
     await fetchSystemConfig();
     await loadMasterProfile();
     await loadResumeHistory();
-    renderMarkdownPreview();
+    renderMarkdownPreview(true);
+    updateMarkdownStats();
     autoFitZoom();
 }
 
@@ -366,7 +395,78 @@ function setupEventListeners() {
     elements.markdownEditor.addEventListener('input', (e) => {
         state.currentMarkdown = e.target.value;
         renderMarkdownPreview();
+        updateMarkdownStats();
     });
+
+    elements.markdownEditor.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            insertBlock('  ');
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+            e.preventDefault();
+            wrapSelection('**', '**', 'bold text');
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
+            e.preventDefault();
+            wrapSelection('*', '*', 'italic text');
+        }
+    });
+
+    // In-Place WYSIWYG Editing Controls
+    if (elements.toggleInPlaceEditBtn) {
+        elements.toggleInPlaceEditBtn.addEventListener('click', toggleInPlaceEdit);
+    }
+    if (elements.inplaceBoldBtn) {
+        elements.inplaceBoldBtn.addEventListener('click', () => applyInPlaceFormat('bold'));
+    }
+    if (elements.inplaceItalicBtn) {
+        elements.inplaceItalicBtn.addEventListener('click', () => applyInPlaceFormat('italic'));
+    }
+    if (elements.inplaceBulletBtn) {
+        elements.inplaceBulletBtn.addEventListener('click', () => applyInPlaceFormat('insertUnorderedList'));
+    }
+    if (elements.inplaceSyncBtn) {
+        elements.inplaceSyncBtn.addEventListener('click', () => {
+            syncInPlaceToMarkdown(true);
+            handleSaveEdits();
+        });
+    }
+    if (elements.resumeSheet) {
+        elements.resumeSheet.addEventListener('input', handleSheetInput);
+    }
+
+    // Rich Markdown Studio Toolbar Controls
+    if (elements.mdBoldBtn) elements.mdBoldBtn.addEventListener('click', () => wrapSelection('**', '**', 'bold text'));
+    if (elements.mdItalicBtn) elements.mdItalicBtn.addEventListener('click', () => wrapSelection('*', '*', 'italic text'));
+    if (elements.mdH1Btn) elements.mdH1Btn.addEventListener('click', () => wrapSelection('# ', '', 'Your Name'));
+    if (elements.mdH2Btn) elements.mdH2Btn.addEventListener('click', () => wrapSelection('\n## ', '\n', 'SECTION TITLE'));
+    if (elements.mdH3Btn) elements.mdH3Btn.addEventListener('click', () => wrapSelection('### ', '', 'Role / Title | Company | 2022 - Present'));
+    if (elements.mdBulletBtn) elements.mdBulletBtn.addEventListener('click', () => wrapSelection('- ', '', 'Accomplished [X] by doing [Y], resulting in [Z]'));
+    if (elements.mdNumListBtn) elements.mdNumListBtn.addEventListener('click', () => wrapSelection('1. ', '', 'Key responsibility or outcome'));
+    if (elements.mdLinkBtn) elements.mdLinkBtn.addEventListener('click', () => wrapSelection('[', '](https://linkedin.com/in/username)', 'LinkedIn Profile'));
+
+    // Snippets & Quick Blocks
+    if (elements.mdXyzBtn) {
+        elements.mdXyzBtn.addEventListener('click', () => insertBlock('\n- Accomplished [X, measured by metric/impact] by doing [Y, specific technical action], resulting in [Z, outcome or efficiency gain]\n'));
+    }
+    if (elements.mdRoleBtn) {
+        elements.mdRoleBtn.addEventListener('click', () => insertBlock('\n### Senior Engineer | Acme Corp | San Francisco, CA | 2022 - Present\n- Built scalable microservices in Python/Go, increasing system throughput by 45%.\n- Automated CI/CD deployment pipelines with GitHub Actions, cutting release cycles from 4h to 15m.\n'));
+    }
+    if (elements.mdProjectBtn) {
+        elements.mdProjectBtn.addEventListener('click', () => insertBlock('\n### Cloud Analytics Platform | Python, Docker, PostgreSQL\n- Engineered distributed analytics engine processing 5M+ daily events with 99.9% uptime.\n- Implemented real-time anomaly detection reducing incident MTTR by 35%.\n'));
+    }
+
+    // Action Verbs
+    if (elements.mdVerbsSelect) {
+        elements.mdVerbsSelect.addEventListener('change', (e) => {
+            const verb = e.target.value;
+            if (verb) {
+                insertBlock(verb + ' ');
+                e.target.selectedIndex = 0;
+            }
+        });
+    }
 
     elements.saveEditsBtn.addEventListener('click', handleSaveEdits);
 
@@ -427,6 +527,11 @@ function switchLeftTab(tab) {
 }
 
 function switchRightTab(tab) {
+    if (state.rightTab === 'preview' && state.isEditingInPlace && tab !== 'preview') {
+        syncInPlaceToMarkdown(false);
+        toggleInPlaceEdit();
+    }
+
     state.rightTab = tab;
     const tabs = ['preview', 'editor', 'ats', 'letter'];
     tabs.forEach(t => {
@@ -444,8 +549,9 @@ function switchRightTab(tab) {
 
     if (tab === 'editor') {
         elements.markdownEditor.value = state.currentMarkdown;
+        updateMarkdownStats();
     } else if (tab === 'preview') {
-        renderMarkdownPreview();
+        renderMarkdownPreview(true);
         autoFitZoom();
     } else if (tab === 'letter') {
         renderCoverLetter();
@@ -464,6 +570,7 @@ async function loadMasterProfile() {
             if (!state.currentMarkdown) {
                 state.currentMarkdown = data.content;
                 elements.markdownEditor.value = data.content;
+                updateMarkdownStats();
             }
         }
     } catch (e) {
@@ -651,8 +758,9 @@ async function handleTailorResume() {
                 elements.activeFilenameDisplay.textContent = data.filename;
             }
 
-            renderMarkdownPreview();
+            renderMarkdownPreview(true);
             renderAtsAnalysis();
+            updateMarkdownStats();
             switchRightTab('preview');
             loadResumeHistory();
             showToast("Resume tailored and saved!");
@@ -669,9 +777,232 @@ async function handleTailorResume() {
     }
 }
 
-// Render Markdown to Preview Sheet
-function renderMarkdownPreview() {
+// ========================================================
+// RICH EDITING ENGINE (WYSIWYG ON-PAPER & MARKDOWN STUDIO)
+// ========================================================
+
+// Toggle Direct On-Paper WYSIWYG Editing
+function toggleInPlaceEdit() {
+    state.isEditingInPlace = !state.isEditingInPlace;
+    const isEditing = state.isEditingInPlace;
+
+    if (elements.resumeSheet) {
+        if (isEditing) {
+            elements.resumeSheet.setAttribute('contenteditable', 'true');
+            elements.resumeSheet.focus();
+        } else {
+            elements.resumeSheet.removeAttribute('contenteditable');
+            syncInPlaceToMarkdown(false);
+        }
+    }
+
+    if (elements.toggleInPlaceEditBtn) {
+        if (isEditing) {
+            elements.toggleInPlaceEditBtn.className = "flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold bg-blue-600 text-white shadow-xs transition-colors";
+            if (elements.inplaceEditBtnText) elements.inplaceEditBtnText.textContent = "Done Editing";
+            if (elements.inplaceStatusText) {
+                elements.inplaceStatusText.textContent = "Direct editing active. Type directly on paper.";
+                elements.inplaceStatusText.className = "text-[11px] text-blue-600 font-semibold hidden sm:inline";
+            }
+            if (elements.inplaceToolsGroup) elements.inplaceToolsGroup.classList.remove('hidden');
+            showToast("Direct on-paper editing enabled. Type anywhere!");
+        } else {
+            elements.toggleInPlaceEditBtn.className = "flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors";
+            if (elements.inplaceEditBtnText) elements.inplaceEditBtnText.textContent = "Edit Directly on Paper";
+            if (elements.inplaceStatusText) {
+                elements.inplaceStatusText.textContent = "Click any line on the resume to type or fix";
+                elements.inplaceStatusText.className = "text-[11px] text-slate-400 hidden sm:inline";
+            }
+            if (elements.inplaceToolsGroup) elements.inplaceToolsGroup.classList.add('hidden');
+            showToast("Saved edits. Live editing closed.");
+        }
+    }
+}
+
+// In-Place Formatting Commands (Bold, Italic, Bullet)
+function applyInPlaceFormat(command) {
+    if (!state.isEditingInPlace) {
+        toggleInPlaceEdit();
+    }
+    if (elements.resumeSheet) {
+        elements.resumeSheet.focus();
+        document.execCommand(command, false, null);
+        handleSheetInput();
+    }
+}
+
+// Debounced Input Event from On-Paper Sheet
+let sheetInputTimer = null;
+function handleSheetInput() {
+    if (!state.isEditingInPlace) return;
+    checkPageFit();
+    if (sheetInputTimer) clearTimeout(sheetInputTimer);
+    sheetInputTimer = setTimeout(() => {
+        syncInPlaceToMarkdown(false);
+    }, 350);
+}
+
+// Turndown HTML -> Markdown instance
+let turndownService = null;
+function getTurndown() {
+    if (!turndownService && typeof TurndownService !== 'undefined') {
+        turndownService = new TurndownService({
+            headingStyle: 'atx',
+            hr: '---',
+            bulletListMarker: '-',
+            codeBlockStyle: 'fenced'
+        });
+        turndownService.addRule('ignoreGuides', {
+            filter: function (node) {
+                return node.classList && (node.classList.contains('page-limit-guide') || node.id === 'inplace-tools-group');
+            },
+            replacement: function () {
+                return '';
+            }
+        });
+        turndownService.addRule('cleanListItems', {
+            filter: 'li',
+            replacement: function (content, node) {
+                content = content.trim();
+                const parent = node.parentNode;
+                const isOrdered = parent && parent.nodeName === 'OL';
+                if (isOrdered) {
+                    const index = Array.prototype.indexOf.call(parent.children, node) + 1;
+                    return `${index}. ${content}\n`;
+                }
+                return `- ${content}\n`;
+            }
+        });
+    }
+    return turndownService;
+}
+
+// Fallback HTML to Markdown Converter
+function fallbackDomToMarkdown(el) {
+    if (!el) return '';
+    let md = '';
+    const children = Array.from(el.children);
+    children.forEach(child => {
+        if (child.classList && child.classList.contains('page-limit-guide')) return;
+        const tag = child.tagName.toLowerCase();
+        const text = child.textContent.trim();
+        if (tag === 'h1') md += `# ${text}\n\n`;
+        else if (tag === 'h2') md += `## ${text}\n\n`;
+        else if (tag === 'h3') md += `### ${text}\n\n`;
+        else if (tag === 'ul') {
+            Array.from(child.children).forEach(li => {
+                const liText = li.textContent.trim();
+                if (liText) md += `- ${liText}\n`;
+            });
+            md += '\n';
+        } else if (tag === 'ol') {
+            Array.from(child.children).forEach((li, idx) => {
+                const liText = li.textContent.trim();
+                if (liText) md += `${idx + 1}. ${liText}\n`;
+            });
+            md += '\n';
+        } else if (tag === 'p') {
+            if (text) md += `${text}\n\n`;
+        } else if (tag === 'hr') {
+            md += `---\n\n`;
+        }
+    });
+    return md.trim();
+}
+
+// Synchronize On-Paper DOM back to Markdown
+function syncInPlaceToMarkdown(showNotice = false) {
     if (!elements.resumeSheet) return;
+
+    const clone = elements.resumeSheet.cloneNode(true);
+    const guide = clone.querySelector('.page-limit-guide');
+    if (guide) guide.remove();
+
+    let md = '';
+    const td = getTurndown();
+    if (td) {
+        try {
+            md = td.turndown(clone);
+        } catch (e) {
+            console.warn('Turndown conversion error, using fallback:', e);
+            md = fallbackDomToMarkdown(clone);
+        }
+    } else {
+        md = fallbackDomToMarkdown(clone);
+    }
+
+    if (md && md.trim()) {
+        state.currentMarkdown = md.trim();
+        if (elements.markdownEditor) {
+            elements.markdownEditor.value = state.currentMarkdown;
+        }
+        updateMarkdownStats();
+        checkPageFit();
+        if (showNotice) {
+            showToast("Edits synchronized to Markdown!");
+        }
+    }
+}
+
+// Rich Markdown Studio Formatting: Wrap Selection
+function wrapSelection(before, after, defaultText = '') {
+    const textarea = elements.markdownEditor;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+
+    const selected = value.substring(start, end) || defaultText;
+    const replacement = `${before}${selected}${after}`;
+
+    textarea.value = value.substring(0, start) + replacement + value.substring(end);
+    state.currentMarkdown = textarea.value;
+
+    const newCursorPos = start + before.length + selected.length;
+    textarea.focus();
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+
+    renderMarkdownPreview(true);
+    updateMarkdownStats();
+}
+
+// Rich Markdown Studio Snippet Inserter
+function insertBlock(snippet) {
+    const textarea = elements.markdownEditor;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+
+    textarea.value = value.substring(0, start) + snippet + value.substring(end);
+    state.currentMarkdown = textarea.value;
+
+    const newCursorPos = start + snippet.length;
+    textarea.focus();
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+
+    renderMarkdownPreview(true);
+    updateMarkdownStats();
+}
+
+// Markdown Live Stats Counter
+function updateMarkdownStats() {
+    const text = elements.markdownEditor ? elements.markdownEditor.value : (state.currentMarkdown || '');
+    const chars = text.length;
+    const words = text.trim() ? (text.trim().match(/\S+/g) || []).length : 0;
+    const lines = text ? text.split('\n').length : 0;
+
+    if (elements.mdWordsCount) elements.mdWordsCount.textContent = `${words} words`;
+    if (elements.mdCharsCount) elements.mdCharsCount.textContent = `${chars} chars`;
+    if (elements.mdLinesCount) elements.mdLinesCount.textContent = `${lines} lines`;
+}
+
+// Render Markdown to Preview Sheet
+function renderMarkdownPreview(force = false) {
+    if (!elements.resumeSheet) return;
+    if (state.isEditingInPlace && !force) return;
     
     updateSheetStyles();
 
@@ -924,7 +1255,8 @@ function handlePrintLetter() {
 async function handleSaveEdits() {
     const content = elements.markdownEditor.value;
     state.currentMarkdown = content;
-    renderMarkdownPreview();
+    renderMarkdownPreview(true);
+    updateMarkdownStats();
 
     try {
         const res = await fetch('/api/save-resume', {
@@ -1009,7 +1341,8 @@ window.loadHistoricalResume = async function(filename) {
             if (elements.activeFilenameDisplay) {
                 elements.activeFilenameDisplay.textContent = filename;
             }
-            renderMarkdownPreview();
+            renderMarkdownPreview(true);
+            updateMarkdownStats();
             switchRightTab('preview');
             showToast(`Loaded ${filename}`);
         }

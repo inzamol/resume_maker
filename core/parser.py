@@ -7,13 +7,13 @@ import docx
 def clean_extracted_text(text: str) -> str:
     """Normalize extracted text whitespace and characters."""
     lines = [line.strip() for line in text.splitlines()]
-    # Remove consecutive empty lines (more than 2)
+    # Remove consecutive empty lines (more than 1 empty line between paragraphs)
     cleaned_lines = []
     empty_count = 0
     for line in lines:
         if not line:
             empty_count += 1
-            if empty_count <= 2:
+            if empty_count <= 1:
                 cleaned_lines.append("")
         else:
             empty_count = 0
